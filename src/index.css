@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-refBg: #FAF9F6;
+  --color-refSurface: #FFFFFF;
+  --color-refBorder: #E3E0D8;
+  --color-refBorderStrong: #CFCBC0;
+  
+  --color-clear-light: #3A7A5E;
+  --color-clear-bgLight: #EDF5F0;
+  
+  --color-watch-light: #9C6B12;
+  --color-watch-bgLight: #FBF3E3;
+  
+  --color-breach-light: #A23B3B;
+  --color-breach-bgLight: #FAEDEC;
+  
+  --color-accent-light: #1F3A5F;
+  --color-accent-bgLight: #EEF2F6;
+  
+  --font-sans: "Times New Roman", Times, Georgia, serif;
+  --font-space: "Times New Roman", Times, Georgia, serif;
+  --font-mono: "Times New Roman", Times, Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply transition-colors duration-200 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Smooth scrolling only if the user hasn't requested reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Accessibility styling for screen readers and reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Custom scrollbars for a premium NOC look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF9F6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CFCBC0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8B3A8;
+}

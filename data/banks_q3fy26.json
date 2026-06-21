@@ -1,0 +1,54 @@
+{
+  "quarter": "Q3 FY26",
+  "periodEnded": "2025-12-31",
+  "currency": "INR",
+  "banks": [
+    {
+      "name": "State Bank of India",
+      "ticker": "SBIN",
+      "type": "PSU",
+      "crar": 14.05,
+      "cet1": 10.99,
+      "netNpaRatio": 0.39,
+      "grossNpaRatio": 2.15
+    },
+    {
+      "name": "HDFC Bank",
+      "ticker": "HDFCBANK",
+      "type": "Private",
+      "crar": 19.9,
+      "tier1": 17.8,
+      "cet1": 17.4,
+      "netNpaRatio": 0.42,
+      "grossNpaRatio": 1.24
+    },
+    {
+      "name": "ICICI Bank",
+      "ticker": "ICICIBANK",
+      "type": "Private",
+      "crar": 17.34,
+      "cet1": 16.46,
+      "netNpaRatio": 0.37,
+      "grossNpaRatio": 1.53
+    },
+    {
+      "name": "Punjab National Bank",
+      "ticker": "PNB",
+      "type": "PSU",
+      "crar": 16.77,
+      "tier1": 14.13,
+      "cet1": 12.52,
+      "netNpaRatio": 0.32,
+      "grossNpaRatio": 3.19
+    },
+    {
+      "name": "Bank of Baroda",
+      "ticker": "BANKBARODA",
+      "type": "PSU",
+      "crar": 15.29,
+      "cet1": 12.45,
+      "netNpaRatio": 0.57,
+      "grossNpaRatio": 2.04
+    }
+  ]
+}

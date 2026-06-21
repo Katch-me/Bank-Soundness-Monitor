@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Soundness Monitor — Design Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF9F6;
+    --surface:#FFFFFF;
+    --border:#E3E0D8;
+    --border-strong:#CFCBC0;
+    --text:#1C2127;
+    --text-soft:#565F6B;
+    --text-muted:#8A8F98;
+    --accent:#1F3A5F;
+    --accent-soft:#EEF2F6;
+    --clear:#3A7A5E;
+    --clear-bg:#EDF5F0;
+    --watch:#9C6B12;
+    --watch-bg:#FBF3E3;
+    --breach:#A23B3B;
+    --breach-bg:#FAEDEC;
+    --radius:6px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter', sans-serif; line-height:1.6; font-size:15px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:'Source Serif 4', serif;}
+  .wrap{max-width:920px; margin:0 auto; padding:0 32px;}
+  ::selection{background:var(--accent-soft); color:var(--accent);}
+
+  /* ---- header ---- */
+  header{border-bottom:1px solid var(--border); background:var(--surface);}
+  .header-top{display:flex; justify-content:space-between; align-items:center; padding:18px 0; border-bottom:1px solid var(--border);}
+  .org{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-soft);}
+  .org .mark{width:26px; height:26px; border:1.5px solid var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Source Serif 4'; font-weight:600; font-size:13px; color:var(--accent);}
+  .updated{font-size:12.5px; color:var(--text-muted);}
+  .header-main{padding:40px 0 32px;}
+  .eyebrow{font-size:12.5px; color:var(--accent); font-weight:600; letter-spacing:0.4px; text-transform:uppercase; margin-bottom:14px;}
+  h1{font-family:'Source Serif 4'; font-weight:600; font-size:32px; line-height:1.25; max-width:680px;}
+  .lede{margin-top:14px; color:var(--text-soft); max-width:620px; font-size:15.5px;}
+
+  /* ---- purpose strip ---- */
+  .purpose{background:var(--accent-soft); border-top:1px solid var(--border); border-bottom:1px solid var(--border);}
+  .purpose .wrap{padding:18px 32px; display:flex; gap:14px; align-items:flex-start;}
+  .purpose .label{font-weight:600; color:var(--accent); font-size:13px; white-space:nowrap; padding-top:1px;}
+  .purpose p{font-size:13.5px; color:var(--text-soft); max-width:680px;}
+
+  section{padding:48px 0;}
+  .section-head{margin-bottom:26px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px;}
+  h2{font-family:'Source Serif 4'; font-weight:600; font-size:21px;}
+  .section-note{font-size:12.5px; color:var(--text-muted);}
+
+  /* ---- scorecard table ---- */
+  .table-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  thead th{
+    text-align:left; font-size:11.5px; font-weight:600; color:var(--text-muted);
+    text-transform:uppercase; letter-spacing:0.4px; padding:14px 18px;
+    border-bottom:1px solid var(--border); background:#FCFBF9;
+  }
+  thead th.num, td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  tbody td{padding:15px 18px; border-bottom:1px solid var(--border); color:var(--text);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FCFBF9;}
+  .bank-name{font-weight:500;}
+  .bank-type{font-size:11.5px; color:var(--text-muted); margin-top:2px;}
+
+  .status{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:500;
+    padding:4px 10px; border-radius:20px;
+  }
+  .status::before{content:''; width:6px; height:6px; border-radius:50%;}
+  .status.clear{background:var(--clear-bg); color:var(--clear);}
+  .status.clear::before{background:var(--clear);}
+  .status.watch{background:var(--watch-bg); color:var(--watch);}
+  .status.watch::before{background:var(--watch);}
+  .status.breach{background:var(--breach-bg); color:var(--breach);}
+  .status.breach::before{background:var(--breach);}
+
+  /* ---- detail cards ---- */
+  .detail-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:680px){.detail-grid{grid-template-columns:1fr;}}
+  .bank-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px;}
+  .bank-card .bc-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;}
+  .bank-card h3{font-family:'Source Serif 4'; font-size:17px; font-weight:600;}
+  .metric-row{display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--border); font-size:13.5px;}
+  .metric-row:first-of-type{border-top:none;}
+  .metric-row .m-label{color:var(--text-soft);}
+  .metric-row .m-value{font-weight:500; font-variant-numeric:tabular-nums;}
+  .threshold-line{font-size:11.5px; color:var(--text-muted); margin-top:2px;}
+
+  /* ---- methodology ---- */
+  .method-list{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:8px;}
+  .method-item{display:flex; gap:16px; padding:16px; border-bottom:1px solid var(--border);}
+  .method-item:last-child{border-bottom:none;}
+  .method-item .m-num{font-family:'Source Serif 4'; color:var(--text-muted); font-size:14px; width:20px; flex-shrink:0;}
+  .method-item h4{font-size:14.5px; font-weight:600; margin-bottom:4px;}
+  .method-item p{font-size:13.5px; color:var(--text-soft);}
+
+  /* ---- disclaimer ---- */
+  .disclaimer{
+    background:var(--surface); border:1px solid var(--border-strong); border-left:3px solid var(--accent);
+    border-radius:var(--radius); padding:20px 22px; font-size:13px; color:var(--text-soft);
+  }
+  .disclaimer strong{color:var(--text); font-weight:600;}
+
+  footer{border-top:1px solid var(--border); padding:32px 0 48px;}
+  footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; font-size:12.5px; color:var(--text-muted);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-top">
+    <div class="org"><span class="mark">B</span> Bank Soundness Early-Warning Monitor</div>
+    <div class="updated">Data as of Dec 31, 2025 · Q3 FY26</div>
+  </div>
+  <div class="wrap header-main">
+    <div class="eyebrow">Independent Regulatory Analytics</div>
+    <h1 class="serif">A plain reading of where each bank stands against RBI's own capital, asset-quality, and leverage thresholds.</h1>
+    <p class="lede">Five major Indian banks, scored against the published Prompt Corrective Action framework, using only what each bank has already disclosed.</p>
+  </div>
+</header>
+
+<div class="purpose">
+  <div class="wrap">
+    <span class="label">Why this exists</span>
+    <p>Every quarter, banks publish capital and asset-quality figures publicly. This applies RBI's own published PCA thresholds to that data automatically — the kind of first-pass check a supervisory analyst would otherwise compile by hand.</p>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section id="scorecard">
+    <div class="section-head">
+      <h2 class="serif">Scorecard</h2>
+      <span class="section-note">All 5 banks currently clear on every parameter</span>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Bank</th>
+            <th class="num">CRAR</th>
+            <th class="num">Net NPA</th>
+            <th>Capital</th>
+            <th>Asset Quality</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="bank-name">State Bank of India</div><div class="bank-type">Public sector</div></td>
+            <td class="num">14.05%</td>
+            <td class="num">0.39%</td>
+            <td><span class="status clear">Clear</span></td>
+            <td><span class="status clear">Clear</span></td>
+          </tr>
+          <tr>
+            <td><div class="bank-name">HDFC Bank</div><div class="bank-type">Private</div></td>
+            <td class="num">19.90%</td>
+            <td class="num">0.42%</td>
+            <td><span class="status clear">Clear</span></td>
+            <td><span class="status clear">Clear</span></td>
+          </tr>
+          <tr>
+            <td><div class="bank-name">ICICI Bank</div><div class="bank-type">Private</div></td>
+            <td class="num">17.34%</td>
+            <td class="num">0.37%</td>
+            <td><span class="status clear">Clear</span></td>
+            <td><span class="status clear">Clear</span></td>
+          </tr>
+          <tr>
+            <td><div class="bank-name">Punjab National Bank</div><div class="bank-type">Public sector</div></td>
+            <td class="num">16.77%</td>
+            <td class="num">0.32%</td>
+            <td><span class="status clear">Clear</span></td>
+            <td><span class="status clear">Clear</span></td>
+          </tr>
+          <tr>
+            <td><div class="bank-name">Bank of Baroda</div><div class="bank-type">Public sector</div></td>
+            <td class="num">15.29%</td>
+            <td class="num">0.57%</td>
+            <td><span class="status clear">Clear</span></td>
+            <td><span class="status clear">Clear</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="detail">
+    <div class="section-head">
+      <h2 class="serif">Distance to threshold</h2>
+      <span class="section-note">How much room each bank has before a PCA trigger</span>
+    </div>
+    <div class="detail-grid">
+      <div class="bank-card">
+        <div class="bc-head">
+          <h3 class="serif">Bank of Baroda</h3>
+          <span class="status clear">Clear</span>
+        </div>
+        <div class="metric-row"><span class="m-label">CRAR</span><span class="m-value">15.29%</span></div>
+        <div class="threshold-line">Threshold 1 triggers below ~9.0% — 629 bps of headroom</div>
+        <div class="metric-row"><span class="m-label">Net NPA</span><span class="m-value">0.57%</span></div>
+        <div class="threshold-line">Threshold 1 triggers at 6.0% — 543 bps of headroom</div>
+      </div>
+      <div class="bank-card">
+        <div class="bc-head">
+          <h3 class="serif">Punjab National Bank</h3>
+          <span class="status clear">Clear</span>
+        </div>
+        <div class="metric-row"><span class="m-label">CRAR</span><span class="m-value">16.77%</span></div>
+        <div class="threshold-line">Threshold 1 triggers below ~9.0% — 777 bps of headroom</div>
+        <div class="metric-row"><span class="m-label">Net NPA</span><span class="m-value">0.32%</span></div>
+        <div class="threshold-line">Threshold 1 triggers at 6.0% — 568 bps of headroom</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="section-head">
+      <h2 class="serif">How a status is assigned</h2>
+    </div>
+    <div class="method-list">
+      <div class="method-item">
+        <span class="m-num serif">1</span>
+        <div><h4>Pull published figures</h4><p>CRAR, CET-1, and Net NPA ratio, taken directly from each bank's quarterly results release.</p></div>
+      </div>
+      <div class="method-item">
+        <span class="m-num serif">2</span>
+        <div><h4>Apply RBI's published thresholds</h4><p>The same Threshold 1 / 2 / 3 boundaries set out in RBI's PCA circular (RBI/2021-22/118) — nothing simplified or re-defined.</p></div>
+      </div>
+      <div class="method-item">
+        <span class="m-num serif">3</span>
+        <div><h4>Show the distance, not just the verdict</h4><p>A bank well clear of a threshold and a bank one quarter away from it both read as "Clear" — the headroom number is what actually matters to a reviewer.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="disclaimer-section">
+    <div class="disclaimer">
+      <strong>What this is, and isn't.</strong> This tool applies RBI's publicly available PCA methodology to each bank's publicly disclosed results. It is an independent analytical exercise, not RBI's actual supervisory assessment — which also draws on non-public information, on-site inspection, and supervisory judgment this tool has no access to.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Built on RBI Circular RBI/2021-22/118 (PCA Framework for Scheduled Commercial Banks)</span>
+    <span>Data: bank investor disclosures, Q3 FY26</span>
+  </div>
+</footer>
+
+</body>
+</html>
